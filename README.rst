@@ -1,6 +1,6 @@
-=====================================
-Dxf2svg - dxf to svg conventer
-=====================================
+==============================
+Dxf2svg - dxf to svg converter
+==============================
 
 Dxf2svg is a dxf to svg format converter.
 
