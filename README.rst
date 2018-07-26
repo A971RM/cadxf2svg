@@ -1,6 +1,7 @@
-================================ 
+=====================================
 Dxf2svg - dxf to svg conventer
-================================
+=====================================
+
 Dxf2svg is a dxf to svg format conventer.
 
 Changelog
@@ -14,15 +15,14 @@ dxf2svg 0.1.2
 
 Requirements
 ------------
-1. Python 2 or 3
-#. svgwrite (https://pypi.python.org/pypi/svgwrite)
-#. dxfstructure (https://pypi.python.org/pypi/dxfstructure)
+1. svgwrite (https://pypi.python.org/pypi/svgwrite)
+#. ezdxf (https://pypi.python.org/pypi/ezdxf)
 
 How to install
 --------------
-Dxf2svg is available through PyPI and can be install with pip command. To install Tebe use pip by typing::
+Dxf2svg is available through PyPI and can be install with pip command. To install dxf2svg and needed requirements use pip by typing ::
 
-  pip install dxf2svg
+  pip install svgwrite ezdxf dxf2svg
 
 Using dxf2svg
 -------------
@@ -34,7 +34,7 @@ In the most simple case, set the current directory to the location of your drwin
 
   dxf2svg drwing.dxf
 
-you can also specife output svg size you want, for example::
+you can also specife output svg size you want, for example ::
 
   dxf2svg drwing.dxf 300
 
