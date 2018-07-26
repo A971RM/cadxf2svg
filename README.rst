@@ -6,9 +6,11 @@ Dxf2svg is a dxf to svg format conventer.
 Changelog
 ---------
 
-dxf2svg 0.1
+dxf2svg 0.1.2
 
-- first public release (alfa stage)
+- first public release (alfa stage) 
+- LINE, CIRCE, TEXT dxf entity supported
+- all entities go to one linetype, color and weight
 
 Requirements
 ------------
@@ -37,6 +39,10 @@ you can also specife output svg size you want, for example::
   dxf2svg drwing.dxf 300
 
 After that you will get output svg files in the same directory where your drwing.dxf is.
+
+Limitation
+----------
+At the moment not all dxf entitles type are supported during converting. It convert LINE, CIRCE, TEXT and all those entities go to one linetype, color and weight.
 
 Licence
 -------
