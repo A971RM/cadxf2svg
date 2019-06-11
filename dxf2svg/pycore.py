@@ -69,7 +69,7 @@ def trans_arc(dxf_entity):
 def trans_text(dxf_entity):
     text_text = dxf_entity.dxf.text
     text_insert = dxf_entity.dxf.insert[:2]
-    text_height = dxf_entity.dxf.height
+    text_height = dxf_entity.dxf.height * 1.4 # hotfix - 1.4 to fit svg and dvg
     svg_entity = svgwrite.Drawing().text(text_text, insert=[0, 0], font_size = text_height*SCALE)
     svg_entity.translate(text_insert[0]*(SCALE), -text_insert[1]*(SCALE))
     return svg_entity
