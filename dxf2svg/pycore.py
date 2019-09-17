@@ -74,6 +74,15 @@ def trans_text(dxf_entity):
     svg_entity.translate(text_insert[0]*(SCALE), -text_insert[1]*(SCALE))
     return svg_entity
 
+def trans_polyline(dxf_entity):
+    points = [(x[0], x[1]) for x in dxf_entity.points()]
+    if dxf_entity.CLOSED == 1:
+        svg_entity = svgwrite.Drawing().polygon(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+    else:
+        svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+    svg_entity.scale(SCALE, -SCALE)
+    return svg_entity
+
 #-------------------------------------------------- 
 
 def entity_filter(dxffilepath, frame_name=None):
@@ -153,6 +162,13 @@ def entity_filter(dxffilepath, frame_name=None):
                 if e.dxftype() == 'ARC':      
                     center = e.dxf.center[:2]
                     radius = e.dxf.radius
+                if e.dxftype() == 'POLYLINE':
+                    x = [p[0] for p in e.points()]
+                    y = [p[1] for p in e.points()]
+                    xmin = min(xmin, min(x))
+                    xmax = max(xmax, max(x))
+                    ymin = min(xmin, min(y))
+                    ymax = max(xmax, max(y))
         xmargin = 0.05*abs(xmax - xmin)
         ymargin = 0.05*abs(ymax - ymin)
         return entitys, [xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin]
@@ -178,6 +194,7 @@ def get_svg_form_dxf(dxffilepath, frame_name=None):
     svg = get_clear_svg(minx*SCALE, miny*SCALE, width*SCALE, height*SCALE)
     for e in entites:
         if e.dxftype() == 'LINE': svg.add(trans_line(e))
+        if e.dxftype() == 'POLYLINE': svg.add(trans_polyline(e))
         if e.dxftype() == 'CIRCLE': svg.add(trans_circle(e))
         if e.dxftype() == 'TEXT': svg.add(trans_text(e))
         if e.dxftype() == 'ARC': svg.add(trans_arc(e))   
