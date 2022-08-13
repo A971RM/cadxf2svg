@@ -74,10 +74,13 @@ def trans_text(dxf_entity):
     svg_entity.translate(text_insert[0]*(SCALE), -text_insert[1]*(SCALE))
     return svg_entity
 
-def trans_polyline(dxf_entity):
-    points = [(x[0], x[1]) for x in dxf_entity.points()]
+def trans_lwpolyline(dxf_entity):
+    points = [(x[0], x[1]) for x in dxf_entity.get_points()]
+    print (points)
+    print dxf_entity.CLOSED
     if dxf_entity.CLOSED == 1:
-        svg_entity = svgwrite.Drawing().polygon(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+        #svg_entity = svgwrite.Drawing().polygon(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+        svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
     else:
         svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
     svg_entity.scale(SCALE, -SCALE)
@@ -101,14 +104,14 @@ def entity_filter(dxffilepath, frame_name=None):
         text_height = name_text_entity.dxf.height
         for e in dxf.modelspace():
             if e.dxftype() == 'LWPOLYLINE' and e.dxf.layer == LAYER:
-                points = list(e.get_rstrip_points())
+                points = list(e.get_points())
                 for p in points:
                     dist = sqrt((p[0] - text_point[0])**2+(p[1] - text_point[1])**2)
                     if dist < 1.0 * text_height:
                         frame_rect_entity = e
     #---
     if frame_rect_entity and name_text_entity:
-        frame_points = list(frame_rect_entity.get_rstrip_points())
+        frame_points = list(frame_rect_entity.get_points())
         entitys_in_frame = []
         xmin = min([i[0] for i in frame_points])
         xmax = max([i[0] for i in frame_points])
@@ -126,6 +129,10 @@ def entity_filter(dxffilepath, frame_name=None):
                 delta_x = radius * cos(start_angle)
                 delta_y = radius * sin(start_angle)
                 point = (center[0]+delta_x, center[1]+delta_y)
+            if e.dxftype() == 'LWPOLYLINE':
+                x = [p[0] for p in e.get_points()]
+                y = [p[1] for p in e.get_points()]
+                point = (x[0], y[0])
             if point:
                 if (xmin <= point[0] <= xmax) and (ymin <= point[1] <= ymax):
                     if not e.dxf.layer == LAYER:
@@ -162,13 +169,13 @@ def entity_filter(dxffilepath, frame_name=None):
                 if e.dxftype() == 'ARC':      
                     center = e.dxf.center[:2]
                     radius = e.dxf.radius
-                if e.dxftype() == 'POLYLINE':
-                    x = [p[0] for p in e.points()]
-                    y = [p[1] for p in e.points()]
+                if e.dxftype() == 'LWPOLYLINE':
+                    x = [p[0] for p in e.get_points()]
+                    y = [p[1] for p in e.get_points()]
                     xmin = min(xmin, min(x))
                     xmax = max(xmax, max(x))
-                    ymin = min(xmin, min(y))
-                    ymax = max(xmax, max(y))
+                    ymin = min(ymin, min(y))
+                    ymax = max(ymax, max(y))
         xmargin = 0.05*abs(xmax - xmin)
         ymargin = 0.05*abs(ymax - ymin)
         return entitys, [xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin]
@@ -193,8 +200,9 @@ def get_svg_form_dxf(dxffilepath, frame_name=None):
     #---
     svg = get_clear_svg(minx*SCALE, miny*SCALE, width*SCALE, height*SCALE)
     for e in entites:
+        print e.dxftype()
         if e.dxftype() == 'LINE': svg.add(trans_line(e))
-        if e.dxftype() == 'POLYLINE': svg.add(trans_polyline(e))
+        if e.dxftype() == 'LWPOLYLINE': svg.add(trans_lwpolyline(e))
         if e.dxftype() == 'CIRCLE': svg.add(trans_circle(e))
         if e.dxftype() == 'TEXT': svg.add(trans_text(e))
         if e.dxftype() == 'ARC': svg.add(trans_arc(e))   

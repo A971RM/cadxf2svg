@@ -1,9 +1,10 @@
-from dxf2svg import dxf2svg
+from dxf2svg import pycore
 import os
 
-test_dxf_path = os.path.join(os.path.dirname(__file__), 'drawing.dxf')
+test_dxf_path = os.path.join(os.path.dirname(__file__), 'Untitled.dxf')
 #---
-dxf2svg.save_svg_from_dxf(test_dxf_path, frame_name='drawing1')
-dxf2svg.save_svg_from_dxf(test_dxf_path, frame_name='spam')
-dxf2svg.save_svg_from_dxf(test_dxf_path)
-dxf2svg.extract_all(test_dxf_path)
+#pycore.save_svg_from_dxf(test_dxf_path, frame_name='drawing1')
+#pycore.save_svg_from_dxf(test_dxf_path, frame_name='spam')
+#pycore.save_svg_from_dxf(test_dxf_path, frame_name='fig1')
+pycore.save_svg_from_dxf(test_dxf_path)
+#pycore.extract_all(test_dxf_path)
