@@ -6,7 +6,7 @@ setup(
     description='Dxf to svg converter',
     long_description = open("README.rst").read(),
     author='Lukasz Laba',
-    author_email='lukaszlaba"gmail".com',
+    author_email='lukaszlaba@gmail.com',
     url='https://bitbucket.org/lukaszlaba/dxf2svg',
     packages = ['dxf2svg'],
     package_data = {'': ['*.dxf', '*.svg']},
