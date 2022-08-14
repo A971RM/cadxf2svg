@@ -1,7 +1,7 @@
 from dxf2svg import pycore
 import os
 
-test_dxf_path = os.path.join(os.path.dirname(__file__), 'Untitled.dxf')
+test_dxf_path = os.path.join(os.path.dirname(__file__), 'Drawing.dxf')
 #---
 #pycore.save_svg_from_dxf(test_dxf_path, frame_name='drawing1')
 #pycore.save_svg_from_dxf(test_dxf_path, frame_name='spam')

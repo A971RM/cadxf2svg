@@ -2,17 +2,17 @@ from distutils.core import setup
 
 setup(
     name='dxf2svg',
-    version='0.1.1',
+    version='0.1.3',
     description='Dxf to svg converter',
     long_description = open("README.rst").read(),
     author='Lukasz Laba',
-    author_email='lukaszlab@o2.pl',
+    author_email='lukaszlaba"gmail".com',
     url='https://bitbucket.org/lukaszlaba/dxf2svg',
     packages = ['dxf2svg'],
     package_data = {'': ['*.dxf', '*.svg']},
     license = 'GNU General Public License (GPL)',
     keywords = 'dxf, svg',
-    python_requires = '>=2.7',
+    python_requires='>=3.5, <4',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: X11 Applications :: Qt',
@@ -23,4 +23,5 @@ setup(
         'Programming Language :: Python',
         'Topic :: Multimedia :: Graphics :: Graphics Conversion',
         ],
+    install_requires=['ezdxf', 'svgwrite'],
     )
