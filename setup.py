@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='dxf2svg',
-    version='0.1.3',
+    version='0.1.4',
     description='Dxf to svg converter',
     long_description = open("README.rst").read(),
     author='Lukasz Laba',
@@ -23,5 +23,5 @@ setup(
         'Programming Language :: Python',
         'Topic :: Multimedia :: Graphics :: Graphics Conversion',
         ],
-    install_requires=['ezdxf', 'svgwrite'],
+    install_requires=['ezdxf==0.8.8', 'svgwrite'],
     )

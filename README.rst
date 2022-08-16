@@ -7,7 +7,7 @@ Dxf2svg is a dxf to svg format converter.
 Changelog
 ---------
 
-dxf2svg 0.1.3
+dxf2svg 0.1.4
 
 - python 2 support dropped
 - POLYLINE support added
