@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import os
+import queue
 import sys
 from math import sqrt, sin, cos, pi
 
 import ezdxf
+import numpy as np
 import svgwrite
 
 LAYER = 'svgframe'
@@ -39,7 +41,7 @@ def get_clear_svg(minx=43.5, miny=-135.6, width=130.1, height=105.2):
         size = (SVG_MAXSIZE, height/width*SVG_MAXSIZE)
     else:
         size = (width/height*SVG_MAXSIZE, SVG_MAXSIZE)
-    svg = svgwrite.Drawing(size = size, viewBox="%s %s %s %s"%(minx, miny, width, height))
+    svg = svgwrite.Drawing(size = size, viewBox="%s %s %s %s"%(minx, miny, width, height), style="background-color: #000;")
     return svg
 
 def get_empty_svg(alerttext='! nothing to display !'):
@@ -48,51 +50,105 @@ def get_empty_svg(alerttext='! nothing to display !'):
     return svg
 
 #--------------------------------------------------
+def get_entity_rgb(entity):
+    """
+    得到颜色信息
+    :param entity:
+    :return:
+    """
+    if entity.rgb:
+        r, g, b = entity.rgb
+    elif entity.dxf.color == ezdxf.lldxf.const.BYLAYER:
+        layer = entity.doc.layers.get(entity.dxf.layer)
+        aci = layer.get_color()
+        rgb24 = ezdxf.colors.DXF_DEFAULT_COLORS[aci]
+        r, g, b = ezdxf.colors.int2rgb(rgb24)
+    else:
+        aci = entity.dxf.color
+        rgb24 = ezdxf.colors.DXF_DEFAULT_COLORS[aci]
+        r, g, b = ezdxf.colors.int2rgb(rgb24)
+    return r, g, b
 
+
+#--------------------------------------------------
 def trans_line(dxf_entity):
-    line_start = dxf_entity.dxf.start[:2]
-    line_end = dxf_entity.dxf.end[:2]
-    svg_entity = svgwrite.Drawing().line(start=line_start, end=line_end, stroke = "black", stroke_width = 1.0/SCALE )
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
+    start = dxf_entity.ocs().to_wcs(dxf_entity.dxf.start)
+    end = dxf_entity.ocs().to_wcs(dxf_entity.dxf.end)
+    line_start = list(start)[:2]
+    line_end = list(end)[:2]
+    svg_entity = svgwrite.Drawing().line(start=line_start, end=line_end, stroke = strock, stroke_width = 1.0/SCALE )
     svg_entity.scale(SCALE,-SCALE)
     return svg_entity
 
 def trans_circle(dxf_entity):
-    circle_center = dxf_entity.dxf.center[:2]
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
+    center = dxf_entity.ocs().to_wcs(dxf_entity.dxf.center)
+    circle_center = list(center)[:2]
     circle_radius = dxf_entity.dxf.radius
-    svg_entity = svgwrite.Drawing().circle(center=circle_center, r=circle_radius, stroke = "black", fill="none", stroke_width = 1.0/SCALE )
+    svg_entity = svgwrite.Drawing().circle(center=circle_center, r=circle_radius, stroke = strock, fill="none", stroke_width = 1.0/SCALE )
     svg_entity.scale(SCALE,-SCALE)
     return svg_entity
 
 def trans_arc(dxf_entity):
-    circle_center = dxf_entity.dxf.center[:2]
-    circle_radius = dxf_entity.dxf.radius
-    svg_entity = svgwrite.Drawing().circle(center=circle_center, r=circle_radius, stroke = "black", fill="none", stroke_width = 1.0/SCALE )
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
+    center = dxf_entity.dxf.center
+    radius = dxf_entity.dxf.radius
+
+    start_angle=dxf_entity.dxf.start_angle
+    end_angle=dxf_entity.dxf.end_angle
+    rad = np.deg2rad(start_angle)
+    startX = center.x + radius * np.cos(rad)
+    startY = center.y + radius * np.sin(rad)
+
+    rad = np.deg2rad(end_angle)
+    endX = center.x + radius * np.cos(rad)
+    endY = center.y + radius * np.sin(rad)
+
+    start = dxf_entity.ocs().to_wcs([startX, startY, 0])
+    end = dxf_entity.ocs().to_wcs([endX, endY, 0])
+
+    clock = dxf_entity.ocs().to_wcs([1, 1, 0])
+    sweep_flag = 1 if np.sign(clock[0]) > 0 else 0
+
+    d = f"M {start[0]},{start[1]} A {radius} {radius} 0 0 {sweep_flag} {end[0]},{end[1]}"
+    svg_entity = svgwrite.Drawing().path(d=d, stroke = strock, fill="none", stroke_width = 1.0/SCALE )
     svg_entity.scale(SCALE,-SCALE)
     return svg_entity
 
 def trans_text(dxf_entity):
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
     text_text = dxf_entity.dxf.text
-    text_insert = dxf_entity.dxf.insert[:2]
+    insert = dxf_entity.ocs().to_wcs(dxf_entity.dxf.insert)
+    text_insert = list(insert)[:2]
     text_height = dxf_entity.dxf.height * 1.4 # hotfix - 1.4 to fit svg and dwg
-    svg_entity = svgwrite.Drawing().text(text_text, insert=[0, 0], font_size = text_height*SCALE)
+    svg_entity = svgwrite.Drawing().text(text_text, insert=[0, 0], font_size = text_height*SCALE, fill=strock)
     svg_entity.translate(text_insert[0]*(SCALE), -text_insert[1]*(SCALE))
     return svg_entity
 
 def trans_lwpolyline(dxf_entity):
-    points = [(x[0], x[1]) for x in dxf_entity.get_points()]
-    if dxf_entity.CLOSED == 1:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
+    points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.get_points('xy')]
+    if dxf_entity.is_closed:
+        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
     else:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
     svg_entity.scale(SCALE, -SCALE)
     return svg_entity
 
 def trans_polyline(dxf_entity):
-    points = [(x[0], x[1]) for x in dxf_entity.points()]
-    if dxf_entity.CLOSED == 1:
-        svg_entity = svgwrite.Drawing().polygon(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+    r, g, b = get_entity_rgb(dxf_entity)
+    strock = f"rgb({r},{g},{b})"    
+    points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.points('xy')]
+    if dxf_entity.is_closed:
+        svg_entity = svgwrite.Drawing().polygon(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
     else:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke='black', fill='none', stroke_width=1.0/SCALE)
+        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
     svg_entity.scale(SCALE, -SCALE)
     return svg_entity
 
@@ -101,132 +157,75 @@ def trans_polyline(dxf_entity):
 def entity_filter(dxffilepath, frame_name=None):
     dxf = get_dxf_dwg_from_file(dxffilepath)
     #----
-    frame_rect_entity = None
-    name_text_entity = None
-    #---
-    if frame_name:
-        for e in dxf.modelspace():
-            if e.dxftype() == 'TEXT' and e.dxf.layer == LAYER:
-                if e.dxf.text == frame_name:
-                    name_text_entity = e
-    if name_text_entity:
-        text_point = name_text_entity.dxf.insert[:2]
-        text_height = name_text_entity.dxf.height
-        for e in dxf.modelspace():
-            if e.dxftype() == 'LWPOLYLINE' and e.dxf.layer == LAYER:
-                points = list(e.get_points())
-                for p in points:
-                    dist = sqrt((p[0] - text_point[0])**2+(p[1] - text_point[1])**2)
-                    if dist < 1.0 * text_height:
-                        frame_rect_entity = e
-    #---
-    if frame_rect_entity and name_text_entity:
-        frame_points = list(frame_rect_entity.get_points())
-        entitys_in_frame = []
-        xmin = min([i[0] for i in frame_points])
-        xmax = max([i[0] for i in frame_points])
-        ymin = min([i[1] for i in frame_points])
-        ymax = max([i[1] for i in frame_points])
-        for e in dxf.modelspace():
-            point = None
-            if e.dxftype() == 'LINE': point = e.dxf.start[:2]
-            if e.dxftype() == 'CIRCLE': point = e.dxf.center[:2]
-            if e.dxftype() == 'TEXT': point = e.dxf.insert[:2]
-            if e.dxftype() == 'ARC':
-                center = e.dxf.center[:2]
-                radius = e.dxf.radius
-                start_angle = e.dxf.start_angle/ 360.0 * 2 * pi
-                delta_x = radius * cos(start_angle)
-                delta_y = radius * sin(start_angle)
-                point = (center[0]+delta_x, center[1]+delta_y)
-            if e.dxftype() == 'LWPOLYLINE':
-                x = [p[0] for p in e.get_points()]
-                y = [p[1] for p in e.get_points()]
-                point = (x[0], y[0])
-            if point:
-                if (xmin <= point[0] <= xmax) and (ymin <= point[1] <= ymax):
-                    if not e.dxf.layer == LAYER:
-                        entitys_in_frame.append(e)
-        return entitys_in_frame, [xmin, xmax, ymin, ymax]
-    elif frame_name:
-        return [], [300, 600, 300, 600]
-    elif not frame_name:
-        entitys = []
-        xmin = None
-        xmax = None
-        ymin = None
-        ymax = None
-        for e in dxf.modelspace():
-            if not e.dxf.layer == LAYER:
-                entitys.append(e)
-                if e.dxftype() == 'LINE':
-                    try:
-                        xmin = min(xmin, e.dxf.start[0], e.dxf.end[0])
-                        xmax = max(xmax, e.dxf.start[0], e.dxf.end[0])
-                        ymin = min(ymin, e.dxf.start[1], e.dxf.end[1])
-                        ymax = max(ymax, e.dxf.start[1], e.dxf.end[1])
-                    except:
-                        xmin = min(e.dxf.start[0], e.dxf.end[0])
-                        xmax = max(e.dxf.start[0], e.dxf.end[0])
-                        ymin = min(e.dxf.start[1], e.dxf.end[1])
-                        ymax = max(e.dxf.start[1], e.dxf.end[1])
-                if e.dxftype() == 'CIRCLE':
-                    e.dxf.center[:2]
-                    e.dxf.radius
-                    try:
-                        xmin = min(xmin, e.dxf.center[0] - e.dxf.radius)
-                        xmax = max(xmax, e.dxf.center[0] + e.dxf.radius)
-                        ymin = min(ymin, e.dxf.center[1] - e.dxf.radius)
-                        ymax = max(ymax,  e.dxf.center[1] + e.dxf.radius)
-                    except:
-                        xmin = min(e.dxf.center[0] - e.dxf.radius)
-                        xmax = max(e.dxf.center[0] + e.dxf.radius)
-                        ymin = min(e.dxf.center[1] - e.dxf.radius)
-                        ymax = max(e.dxf.center[1] + e.dxf.radius)
-                if e.dxftype() == 'TEXT':
-                    try:
-                        xmin = min(xmin, e.dxf.insert[0])
-                        xmax = max(xmax, e.dxf.insert[0])
-                        ymin = min(ymin, e.dxf.insert[1])
-                        ymax = max(ymax,  e.dxf.insert[1])
-                    except:
-                        xmin = min(e.dxf.insert[0])
-                        xmax = max(e.dxf.insert[0])
-                        ymin = min(e.dxf.insert[1])
-                        ymax = max(e.dxf.insert[1])
-                if e.dxftype() == 'ARC':
-                    center = e.dxf.center[:2]
-                    radius = e.dxf.radius
-                if e.dxftype() == 'LWPOLYLINE':
-                    x = [p[0] for p in e.get_points()]
-                    y = [p[1] for p in e.get_points()]
-                    try:
-                        xmin = min(xmin, min(x))
-                        xmax = max(xmax, max(x))
-                        ymin = min(ymin, min(y))
-                        ymax = max(ymax, max(y))
-                    except:
-                        xmin = min(min(x))
-                        xmax = max(max(x))
-                        ymin = min(min(y))
-                        ymax = max(max(y))
-                if e.dxftype() == 'POLYLINE':
-                    x = [p[0] for p in e.points()]
-                    y = [p[1] for p in e.points()]
-                    try:
-                        xmin = min(xmin, min(x))
-                        xmax = max(xmax, max(x))
-                        ymin = min(ymin, min(y))
-                        ymax = max(ymax, max(y))
-                    except:
-                        xmin = min(min(x))
-                        xmax = max(max(x))
-                        ymin = min(min(y))
-                        ymax = max(max(y))
-        xmargin = 0.05*abs(xmax - xmin)
-        ymargin = 0.05*abs(ymax - ymin)
-        print ([xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin])
-        return entitys, [xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin]
+    # 返回的数据
+    entities = []
+    xmin = float('inf')
+    xmax = float('-inf')
+    ymin = float('inf')
+    ymax = float('-inf')
+
+    # 使用队列，先进先出遍历
+    q = queue.Queue()
+    for e in dxf.modelspace():
+        q.put(e)
+
+    while not q.empty():
+        entity = q.get()
+        if entity.dxftype() != 'INSERT':
+            entities.append(entity)
+            continue
+
+        # INSERT时，为块参考
+        try:
+            for ve in entity.virtual_entities():
+                q.put(ve)
+        except Exception as e:
+            print("EXPLOID Error. ", e)
+
+    for e in entities:
+        if e.dxftype() == 'LINE':
+            start = e.ocs().to_wcs(e.dxf.start)
+            end = e.ocs().to_wcs(e.dxf.end)
+            xmin = min(xmin, start[0], end[0])
+            xmax = max(xmax, start[0], end[0])
+            ymin = min(ymin, start[1], end[1])
+            ymax = max(ymax, start[1], end[1])
+        elif e.dxftype() == 'CIRCLE':
+            center = e.ocs().to_wcs(e.dxf.center)
+            # e.dxf.radius
+            xmin = min(xmin, center[0] - e.dxf.radius)
+            xmax = max(xmax, center[0] + e.dxf.radius)
+            ymin = min(ymin, center[1] - e.dxf.radius)
+            ymax = max(ymax, center[1] + e.dxf.radius)
+        elif e.dxftype() == 'TEXT':
+            insert = e.ocs().to_wcs(e.dxf.insert)
+            xmin = min(xmin, insert[0])
+            xmax = max(xmax, insert[0])
+            ymin = min(ymin, insert[1])
+            ymax = max(ymax, insert[1])
+        elif e.dxftype() == 'ARC':
+            # center = e.dxf.center[:2]
+            radius = e.dxf.radius
+        elif e.dxftype() == 'LWPOLYLINE':
+            x = [e.ocs().to_wcs(p)[0] for p in e.get_points('xy')]
+            y = [e.ocs().to_wcs(p)[1] for p in e.get_points('xy')]
+            xmin = min(xmin, min(x))
+            xmax = max(xmax, max(x))
+            ymin = min(ymin, min(y))
+            ymax = max(ymax, max(y))
+        elif e.dxftype() == 'POLYLINE':
+            x = [e.ocs().to_wcs(p)[0] for p in e.points('xy')]
+            y = [e.ocs().to_wcs(p)[1] for p in e.points('xy')]
+            xmin = min(xmin, min(x))
+            xmax = max(xmax, max(x))
+            ymin = min(ymin, min(y))
+            ymax = max(ymax, max(y))
+
+
+    xmargin = 0.05*abs(xmax - xmin)
+    ymargin = 0.05*abs(ymax - ymin)
+    print ([xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin])
+    return entities, [xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin]
 
 #--------------------------------------------------
 

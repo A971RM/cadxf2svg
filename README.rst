@@ -1,11 +1,22 @@
 ==============================
-Dxf2svg - dxf to svg converter
+CADxf2svg - dxf to svg converter
 ==============================
 
-Dxf2svg is a dxf to svg format converter.
+CADxf2svg is a dxf to svg format converter.
+
+This project comes from: https://bitbucket.org/lukaszlaba
+And Thanks to Łukasz Laba.
+Please refer to the url for origin code.
 
 Changelog
 ---------
+
+cadxf2svg 1.0.0
+
+- support INSERT
+- support ARC
+- support Color
+- DONOT support frame filter
 
 dxf2svg 0.1.4
 
@@ -22,6 +33,7 @@ Requirements
 ------------
 1. svgwrite (https://pypi.python.org/pypi/svgwrite)
 2. ezdxf (https://pypi.python.org/pypi/ezdxf)
+2. numpy (https://pypi.python.org/pypi/numpy)
 
 How to install
 --------------
@@ -57,12 +69,3 @@ Contributions
 -------------
 If you want to help out, create a pull request or write email.
 
-More information
-----------------
-Project website: https://bitbucket.org/lukaszlaba/dxf2svg/wiki
-
-Code repository: https://bitbucket.org/lukaszlaba/dxf2svg
-
-PyPI package: https://pypi.python.org/pypi/dxf2svg
-
-Contact: Lukasz Laba <lukaszlaba@gmail.com>

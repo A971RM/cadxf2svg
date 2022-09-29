@@ -1,17 +1,17 @@
 from distutils.core import setup
 
 setup(
-    name='dxf2svg',
-    version='0.1.4',
+    name='cadxf2svg',
+    version='1.0.0',
     description='Dxf to svg converter',
     long_description = open("README.rst").read(),
     author='Lukasz Laba',
     author_email='lukaszlaba@gmail.com',
     url='https://bitbucket.org/lukaszlaba/dxf2svg',
-    packages = ['dxf2svg'],
+    packages = ['cadxf2svg'],
     package_data = {'': ['*.dxf', '*.svg']},
     license = 'GNU General Public License (GPL)',
-    keywords = 'dxf, svg',
+    keywords = 'dxf, svg, cad',
     python_requires='>=3.5, <4',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -23,5 +23,5 @@ setup(
         'Programming Language :: Python',
         'Topic :: Multimedia :: Graphics :: Graphics Conversion',
         ],
-    install_requires=['ezdxf==0.8.8', 'svgwrite'],
+    install_requires=['ezdxf[draw]', 'svgwrite', 'numpy'],
     )
