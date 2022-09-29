@@ -144,7 +144,7 @@ def trans_lwpolyline(dxf_entity):
 def trans_polyline(dxf_entity):
     r, g, b = get_entity_rgb(dxf_entity)
     strock = f"rgb({r},{g},{b})"    
-    points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.points('xy')]
+    points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.points()]
     if dxf_entity.is_closed:
         svg_entity = svgwrite.Drawing().polygon(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
     else:
@@ -214,8 +214,8 @@ def entity_filter(dxffilepath, frame_name=None):
             ymin = min(ymin, min(y))
             ymax = max(ymax, max(y))
         elif e.dxftype() == 'POLYLINE':
-            x = [e.ocs().to_wcs(p)[0] for p in e.points('xy')]
-            y = [e.ocs().to_wcs(p)[1] for p in e.points('xy')]
+            x = [e.ocs().to_wcs(p)[0] for p in e.points()]
+            y = [e.ocs().to_wcs(p)[1] for p in e.points()]
             xmin = min(xmin, min(x))
             xmax = max(xmax, max(x))
             ymin = min(ymin, min(y))
