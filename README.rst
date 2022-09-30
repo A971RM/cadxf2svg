@@ -4,12 +4,9 @@ CADxf2svg - dxf to svg converter
 
 CADxf2svg is a dxf to svg format converter.
 
-
-```
-This project comes from: https://bitbucket.org/lukaszlaba
-And Thanks to Łukasz Laba.
-Please refer to the url for origin code.
-```
+- This project comes from: https://bitbucket.org/lukaszlaba
+- And Thanks to Łukasz Laba.
+- Please refer to the url for origin code.
 
 
 Changelog
