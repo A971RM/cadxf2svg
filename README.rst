@@ -3,11 +3,11 @@ CADxf2svg - dxf to svg converter
 ==============================
 
 CADxf2svg is a dxf to svg format converter.
-
+```
 This project comes from: https://bitbucket.org/lukaszlaba
 And Thanks to Łukasz Laba.
 Please refer to the url for origin code.
-
+```
 Changelog
 ---------
 
@@ -37,20 +37,19 @@ Requirements
 
 How to install
 --------------
-Dxf2svg is available through PyPI and can be install with pip command. To install dxf2svg and needed requirements use pip by typing ::
 
-  pip install svgwrite
+python setup.py install
 
-Using dxf2svg
+Using cadxf2svg
 -------------
 
 In the most simple case, set the current directory to the location of your drawing.dxf and execute::
 
-  python -m dxf2svg drawing.dxf.dxf
+  python -m cadxf2svg drawing.dxf.dxf
 
 You can also specify output svg size you want, for example ::
 
-  python -m dxf2svg drawing.dxf.dxf 300
+  python -m cadxf2svg drawing.dxf.dxf 300
 
 After that you will get output svg files in the same directory where your drawing.dxf is.
 Please check project website for more information.
