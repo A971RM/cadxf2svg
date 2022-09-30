@@ -34,12 +34,12 @@ Requirements
 ------------
 1. svgwrite (https://pypi.python.org/pypi/svgwrite)
 2. ezdxf (https://pypi.python.org/pypi/ezdxf)
-2. numpy (https://pypi.python.org/pypi/numpy)
+3. numpy (https://pypi.python.org/pypi/numpy)
 
 How to install
 --------------
 
-python setup.py install
+  python setup.py install
 
 Using cadxf2svg
 -------------
