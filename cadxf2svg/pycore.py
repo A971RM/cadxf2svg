@@ -273,18 +273,18 @@ def save_svg_from_dxf(dxffilepath, svgfilepath=None, frame_name=None, size = 300
     else: postfix = ''
     if not svgfilepath:
         svgfilepath = dxffilepath.replace('.dxf', '%s.svg'%postfix)
-    svg.saveas(svgfilepath)
+    svg.saveas(svgfilepath, pretty=True)
     print ('      .. saved as %s'%os.path.basename(svgfilepath))
     #---
     SVG_MAXSIZE = _oldsize
 
 def extract_all(dxffilepath, size = 300):
-    dxf = get_dxf_dwg_from_file(dxffilepath)
+    # dxf = get_dxf_dwg_from_file(dxffilepath)
     #---
     frame_list = []
-    for e in dxf.modelspace():
-        if e.dxftype() == 'TEXT' and e.dxf.layer == LAYER:
-            frame_list.append(e.dxf.text)
+    # for e in dxf.modelspace():
+    #     if e.dxftype() == 'TEXT' and e.dxf.layer == LAYER:
+    #         frame_list.append(e.dxf.text)
     #---
     if frame_list:
         for frame in frame_list:
