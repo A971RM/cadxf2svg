@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 --------------------------------------------------------------------------
 '''
 
-from dxf2svg.pycore import *
+from cadxf2svg.pycore import *
 
 def main():
     console_path = os.getcwd()

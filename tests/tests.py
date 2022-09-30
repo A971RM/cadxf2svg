@@ -1,4 +1,4 @@
-from dxf2svg import pycore
+from cadxf2svg import pycore
 import os
 
 test_dxf_path = os.path.join(os.path.dirname(__file__), 'Drawing.dxf')
