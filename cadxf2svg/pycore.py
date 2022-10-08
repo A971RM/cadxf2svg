@@ -78,7 +78,8 @@ def trans_line(dxf_entity):
     end = dxf_entity.ocs().to_wcs(dxf_entity.dxf.end)
     line_start = list(start)[:2]
     line_end = list(end)[:2]
-    svg_entity = svgwrite.Drawing().line(start=line_start, end=line_end, stroke = strock, stroke_width = 1.0/SCALE )
+    d = f"M {line_start[0]},{line_start[1]} L {line_end[0]},{line_end[1]}"
+    svg_entity = svgwrite.Drawing().path(d=d, stroke = strock, fill="none", stroke_width = 1.0/SCALE )
     svg_entity.scale(SCALE,-SCALE)
     return svg_entity
 
