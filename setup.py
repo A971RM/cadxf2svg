@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='cadxf2svg',
-    version='1.0.0',
+    version='1.0.1',
     description='Dxf to svg converter',
     long_description = open("README.rst").read(),
     author='Lukasz Laba',

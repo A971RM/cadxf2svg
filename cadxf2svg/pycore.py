@@ -136,22 +136,32 @@ def trans_lwpolyline(dxf_entity):
     strock = f"rgb({r},{g},{b})"    
     points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.get_points('xy')]
     if dxf_entity.is_closed:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
-    else:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
-    svg_entity.scale(SCALE, -SCALE)
-    return svg_entity
+        points.append(points[0])
+    svg_group = svgwrite.container.Group()
+    for i in range(1, len(points)):
+        line_start = points[i-1]
+        line_end = points[i]
+        d = f"M {line_start[0]},{line_start[1]} L {line_end[0]},{line_end[1]}"
+        svg_entity = svgwrite.Drawing().path(d=d, stroke = strock, fill="none", stroke_width = 1.0/SCALE )
+        svg_entity.scale(SCALE,-SCALE)
+        svg_group.add(svg_entity)
+    return svg_group
 
 def trans_polyline(dxf_entity):
     r, g, b = get_entity_rgb(dxf_entity)
     strock = f"rgb({r},{g},{b})"    
     points = [(dxf_entity.ocs().to_wcs(x)[0], dxf_entity.ocs().to_wcs(x)[1]) for x in dxf_entity.points()]
     if dxf_entity.is_closed:
-        svg_entity = svgwrite.Drawing().polygon(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
-    else:
-        svg_entity = svgwrite.Drawing().polyline(points=points, stroke=strock, fill='none', stroke_width=1.0/SCALE)
-    svg_entity.scale(SCALE, -SCALE)
-    return svg_entity
+        points.append(points[0])
+    svg_group = svgwrite.container.Group()
+    for i in range(1, len(points)):
+        line_start = points[i-1]
+        line_end = points[i]
+        d = f"M {line_start[0]},{line_start[1]} L {line_end[0]},{line_end[1]}"
+        svg_entity = svgwrite.Drawing().path(d=d, stroke = strock, fill="none", stroke_width = 1.0/SCALE )
+        svg_entity.scale(SCALE,-SCALE)
+        svg_group.add(svg_entity)
+    return svg_group
 
 #--------------------------------------------------
 
